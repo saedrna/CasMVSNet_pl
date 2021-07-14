@@ -122,6 +122,9 @@ class MVSSystem(LightningModule):
             log['train/acc_2mm'] = acc_threshold(depth_pred, depth_gt, mask, 2).mean()
             log['train/acc_4mm'] = acc_threshold(depth_pred, depth_gt, mask, 4).mean()
 
+        for log_key, log_val in log.items():
+            self.log(log_key, log_val)
+
         return {'loss': loss,
                 'progress_bar': {'train_abs_err': abs_err},
                 'log': log
@@ -163,14 +166,19 @@ class MVSSystem(LightningModule):
         mean_acc_2mm = torch.stack([x['val_acc_2mm'] for x in outputs]).sum() / mask_sum
         mean_acc_4mm = torch.stack([x['val_acc_4mm'] for x in outputs]).sum() / mask_sum
 
+        log = {'val/loss': mean_loss,
+               'val/abs_err': mean_abs_err,
+               'val/acc_1mm': mean_acc_1mm,
+               'val/acc_2mm': mean_acc_2mm,
+               'val/acc_4mm': mean_acc_4mm,
+               }
+        
+        for log_key, log_val in log.items():
+            self.log(log_key, log_val)
+
         return {'progress_bar': {'val_loss': mean_loss,
                                  'val_abs_err': mean_abs_err},
-                'log': {'val/loss': mean_loss,
-                        'val/abs_err': mean_abs_err,
-                        'val/acc_1mm': mean_acc_1mm,
-                        'val/acc_2mm': mean_acc_2mm,
-                        'val/acc_4mm': mean_acc_4mm,
-                        }
+                'log': log
                }
 
 
